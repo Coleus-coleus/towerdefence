@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>background/Black TortoiseScence.jpg</file>
+        <file>background/choosescence.png</file>
+        <file>background/startbackground.png</file>
+        <file>button/backbutton.png</file>
+        <file>button/startbutton.png</file>
+        <file>logo/logo.png</file>
+        <file>logo/scence_logo/Azure Dragon.png</file>
+        <file>logo/scence_logo/Black Tortoise.png</file>
+        <file>logo/scence_logo/Vermilion Bird.png</file>
+        <file>logo/scence_logo/White Tiger.png</file>
+        <file>background/Azure DragonScence.png</file>
+        <file>background/Vermilion BirdScence.jpg</file>
+        <file>background/White TigerScence.jpg</file>
+    </qresource>
+</RCC>
