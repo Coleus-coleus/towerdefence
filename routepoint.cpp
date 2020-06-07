@@ -1,12 +1,18 @@
 #include "routepoint.h"
 #include <QPoint>
-
-//RoutePoint::RoutePoint(QPoint Point):My_Coordinate(Point),My_NextRoutePoint(NULL)
-//{
-//}
-RoutePoint::RoutePoint(QPoint Point)
+#include <QPainter>
+#include <QPixmap>
+#include <QSize>
+//构造函数
+RoutePoint::RoutePoint(QPoint Point,const QPixmap &Picture):
+    My_Coordinate(Point),
+    My_Picture(Picture),
+    My_NextRoutePoint(NULL)
 {
-    My_Coordinate=Point;
+    //缩放图片
+    QSize PictureSize(100,100);
+    QPixmap SizePicture=My_Picture.scaled(PictureSize,Qt::KeepAspectRatio);
+    My_Picture=SizePicture;
 }
 void RoutePoint::SetNextRoutePoint(RoutePoint *NextRoutePoint)
 {
@@ -23,8 +29,11 @@ const QPoint RoutePoint::Coordinate() const
 void RoutePoint::draw(QPainter *painter) const
 {
     painter->save();
-    painter->setPen(Qt::white);
-    painter->drawEllipse(My_Coordinate,50,50);
+    painter->drawPixmap(My_Coordinate.x(),My_Coordinate.y(),My_Picture);
     painter->restore();
+}
+void RoutePoint::SetCoordinate(QPoint Coordinate)
+{
+    My_Coordinate=Coordinate;
 }
 

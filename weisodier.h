@@ -13,18 +13,18 @@ class WeiSodier : public QObject
 {
     Q_OBJECT
 public:
-    WeiSodier(RoutePoint StartCoordinate,DifferentScence *Scence,const QPixmap &Picture=QPixmap(":/button/startbutton.png"));//构造函数
+    WeiSodier(RoutePoint StartCoordinate,DifferentScence *Scence,const QPixmap &Picture=QPixmap(":/WeiSoider/WeiCavalry.png"));//构造函数
     void draw(QPainter *painter) const;//载入魏军图片
     void march();//魏军行军
-    void OrderActive();//命令魏军行动
 
 signals:
 
 public slots:
+    void OrderActive();//命令魏军行动
 private:
     int WeiSodier_MaxHP;//魏军最大血量
     int WeiSodier_CurrentHP;//魏军目前血量
-    double WeiSodier_Speed;//魏军速度
+    qreal WeiSodier_Speed;//魏军速度
     bool WeiSodier_Active;//魏军是否移动
     QPoint WeiSodier_Coordinate;//魏军坐标
     QPixmap WeiSodier_Picture;//魏军贴图

@@ -55,4 +55,5 @@ RESOURCES += \
     resource.qrc \
     resource.qrc \
     resource.qrc \
+    resource.qrc \
     resource.qrc

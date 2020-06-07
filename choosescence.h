@@ -9,7 +9,7 @@ class Choosescence : public QWidget
     Q_OBJECT
 public:
     explicit Choosescence(QWidget *parent = nullptr);
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *);//重写画图函数
     DifferentScence *differentScence=NULL;//设置关卡
 
 

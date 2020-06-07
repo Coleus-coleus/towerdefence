@@ -19,5 +19,5 @@ Mybutton::Mybutton(QString pathway)
        this->setIcon(pix);
        //设置图标大小
        this->setIconSize(QSize(325,325));
-    this->setFlat(true);
+       this->setFlat(true);
 }

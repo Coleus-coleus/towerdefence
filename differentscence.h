@@ -27,7 +27,7 @@ private:
     QList<Tower> BlackTortoiseScenceTower_List;//管理玄武关塔信息;
     QList<Tower> VermilionBirdScenceTower_List;//管理朱雀关塔信息;
     QList<Tower> WhiteTigerScenceTower_List;//管理白虎关塔信息;
-    QList<RoutePoint> AzureDragonScenceRoutePoint_List;//管理青龙关屯田点信息
+    QList<RoutePoint *> AzureDragonScenceRoutePoint_List;//管理青龙关屯田点信息
     QList<RoutePoint> BlackTortoiseScenceRoutePoint_List;//管理玄武关屯田点信息
     QList<RoutePoint> VermilionBirdScenceRoutePoint_List;//管理朱雀关屯田点信息
     QList<RoutePoint> WhiteTigerScenceRoutePoint_List;//管理白虎关屯田点信息
@@ -35,7 +35,7 @@ private:
     QList<WeiSodier *> WeiSodier_List;//管理魏军信息
     void LoadTowerCoordinate();//载入塔信息
     void LoadRoutePoint();//载入屯田点信息
-    bool LoadBatch();//载入批数信息
+    bool LoadBatch();//载入魏军批数
     QString Flag=NULL;//选关信号
     int WeiSodier_Batch;//魏军批数
 
