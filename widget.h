@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "tower.h"
 #include "choosescence.h"
+#include <QSound>
 
 namespace Ui {
 class Widget;
@@ -20,6 +21,7 @@ public:
     void paintEvent(QPaintEvent *);
     //选关场景
     Choosescence *choosescence=NULL;
+    QSound *StartSound;//开始音效
 
 private:
     Ui::Widget *ui;

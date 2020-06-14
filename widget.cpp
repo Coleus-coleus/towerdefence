@@ -8,6 +8,7 @@
 #include <QDebug>
 #include <QPushButton>
 #include <QTimer>
+#include <QSound>
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Widget)
@@ -19,12 +20,17 @@ Widget::Widget(QWidget *parent) :
     setWindowTitle("蜀汉悲歌");
     //开始按钮
     choosescence=new Choosescence;//实例化，选择关卡场景
+    StartSound=new QSound(":/Music/BeginMusic.wav",this);//开始音乐
+    StartSound->play();
+    StartSound->setLoops(10000000);
     connect(ui->startbutton,&QPushButton::clicked,[=]()
     {
     QTimer::singleShot(500,this,[=]()//延迟进入关卡
     {
+        StartSound->stop();
         this->hide();//隐藏自身
         choosescence->show();//显示选关场景
+        choosescence->ChooseSound->play();
     });
     });
     //返回按钮
@@ -32,11 +38,12 @@ Widget::Widget(QWidget *parent) :
     connect(choosescence,&Choosescence::Choosescenceback,this,[=](){
         QTimer::singleShot(500,this,[=]()
         {
-        choosescence->hide();//选关场景的隐藏
-        this->show();//显示选关场景
+            choosescence->ChooseSound->stop();
+            choosescence->hide();//选关场景的隐藏
+            this->show();//显示选关场景
+            StartSound->play();
         });
     });
-
 }
 
 void Widget::paintEvent(QPaintEvent *)

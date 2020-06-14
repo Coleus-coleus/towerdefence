@@ -3,12 +3,14 @@
 #include <QPushButton>
 #include "mybutton.h"
 #include "differentscence.h"
-
+#include <QSound>
 Choosescence::Choosescence(QWidget *parent) : QWidget(parent)
 {
     setWindowIcon(QIcon(":/logo/logo.png"));
     this->setFixedSize(1600,1000);
     setWindowTitle("蜀汉悲歌");
+    ChooseSound=new QSound(":/Music/ChooseMusic.wav",this);
+    ChooseSound->setLoops(10000000);
     //设置返回按钮
     Mybutton *backbutton=new Mybutton(":/button/backbutton");
     backbutton->setParent(this);
@@ -45,30 +47,46 @@ Choosescence::Choosescence(QWidget *parent) : QWidget(parent)
     //转入青龙关
     connect(scencebutton[0],&Mybutton::clicked,[=]()
     {
-    this->hide();
-    differentScence->ChangeScence("AzureDragonScence");
-    differentScence->show();
+        ChooseSound->stop();
+        this->hide();
+        differentScence->ReturnScenceSound()->play();
+        differentScence->ChangeScence("AzureDragonScence");
+        differentScence->show();
+        differentScence->ReturnWeiTimer()->start(1000);
+        differentScence->ReturnLiuTimer()->start(1);
     });
     //转入玄武关
     connect(scencebutton[1],&Mybutton::clicked,[=]()
     {
-    this->hide();
-    differentScence->ChangeScence("BlackTortoiseScence");
-    differentScence->show();
+        ChooseSound->stop();
+        this->hide();
+        differentScence->ReturnScenceSound()->play();
+        differentScence->ChangeScence("BlackTortoiseScence");
+        differentScence->show();
+        differentScence->ReturnWeiTimer()->start(1000);
+        differentScence->ReturnLiuTimer()->start(1);
     });
     //转入朱雀关
     connect(scencebutton[2],&Mybutton::clicked,[=]()
     {
-    this->hide();
-    differentScence->ChangeScence("VermilionBirdScence");
-    differentScence->show();
+        ChooseSound->stop();
+        this->hide();
+        differentScence->ReturnScenceSound()->play();
+        differentScence->ChangeScence("VermilionBirdScence");
+        differentScence->show();
+        differentScence->ReturnWeiTimer()->start(1000);
+        differentScence->ReturnLiuTimer()->start(1);
     });
     //转入白虎关
     connect(scencebutton[3],&Mybutton::clicked,[=]()
     {
-    this->hide();
-    differentScence->ChangeScence("WhiteTigerScence");
-    differentScence->show();
+        ChooseSound->stop();
+        this->hide();
+        differentScence->ReturnScenceSound()->play();
+        differentScence->ChangeScence("WhiteTigerScence");
+        differentScence->show();
+        differentScence->ReturnWeiTimer()->start(1000);
+        differentScence->ReturnLiuTimer()->start(1);
     });
 
 }
