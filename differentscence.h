@@ -12,9 +12,12 @@
 #include <QTimer>
 #include <QSound>
 #include <QPushButton>
+#include "endscence.h"
+#include "wind.h"
 class CloseCombatDefend;
 class WeiSodier;
 class Efficacy;
+class Wind;
 
 class DifferentScence : public QWidget
 {
@@ -29,6 +32,8 @@ public:
     void destroyWeiSodier(WeiSodier *weiSodier);//移除魏军
     void AddEfficacy(Efficacy *efficacy);//增添特效
     void destroyEfficacy(Efficacy *efficacy);//移除特效
+    void AddWind(Wind *wind);//增添风(诸葛亮、诸葛瞻)
+    void destroyWind(Wind *wind);//移除风(诸葛亮、诸葛瞻)
     void ForceWarLose();//转化WarLose的值
     void DrawBatch(QPainter *Painter);//画出魏军批数
 	void DrawChengDuCitizenry(QPainter *Painter);//画出成都民心
@@ -44,6 +49,8 @@ public:
     QTimer* ReturnLiuTimer();//返回增强蜀军能力的计时器
     int ReturnCoutLiuBei();//返回在场刘备数目
     int ReturnCoutLiuShen();//返回在场刘谌数目
+    EndScence *Endscence=NULL;//设置结束场景
+    void ChangeKind(QString kind);//强制转化类型
 protected:
     void mousePressEvent(QMouseEvent *event);//重写鼠标点击事件,召唤蜀国英烈
     void mouseDoubleClickEvent(QMouseEvent *event);//重写鼠标双击事件，召唤更为强大的蜀国英烈
@@ -59,6 +66,7 @@ private:
     QList<CloseCombatDefend *> CloseCombatDefend_List;//管理近战塔防信息
     QList<WeiSodier *> WeiSodier_List;//管理魏军信息
     QList<Efficacy *> Efficacy_List;//管理特效信息
+    QList<Wind *> Wind_List;//管理风信息(诸葛瞻、诸葛亮)
     void LoadTowerCoordinate();//载入塔信息
     void LoadRoutePoint();//载入屯田点信息
     bool LoadBatch();//载入魏军批数
@@ -83,10 +91,22 @@ private:
     int CoutLiuShen;//记录战场上出现了多少个刘谌
     int CoutLiuBeiRecord;//对比值，刘备
     int CoutLiuShenRecord;//对比值，刘谌
+    int CoutZhuGeLiang;//记录战场上出现了多少个诸葛亮
+    int CoutZhuGeZhan;//记录战场上出现了多少个诸葛瞻
     QPushButton *btnAddBatch;//增加总批数按钮
     QPushButton *btnAddCurrentBatch;//增加当前批数按钮
     QPushButton *btnDecreaseBatch;//减少总批数按钮
     QPushButton *btnDecreaseCurrentBatch;//减少当前批数按钮
+    QPushButton *btnZhuGeZhan;//标记诸葛瞻
+    QPushButton *btnGuanXingZhangBao;//标记关兴张苞
+    QPushButton *btnLiuShen;//标记刘谌
+    QPushButton *btnHanShen;//标记黄忠
+    QPushButton *btnEndless;//无尽模式按钮
+    QPushButton *btnAddMorale;//按钮增加士气
+    bool IsEndless;//是否为无尽模式
+    QTimer *ZhuGeLiangTimer;//诸葛亮攻击定时器
+    QTimer *ZhuGeZhanTimer;//诸葛瞻攻击定时器
+    QString Defend_Kind;//强制转换类型
 
 
 signals:

@@ -11,7 +11,8 @@
 #include "tower.h"
 #include "efficacy.h"
 #include <QSound>
-CloseCombatDefend::CloseCombatDefend(QPoint coordinate,DifferentScence* scence,const QPixmap &picture)
+#include "wind.h"
+CloseCombatDefend::CloseCombatDefend(QPoint coordinate,DifferentScence* scence,const int way,const QPixmap &picture)
     :CloseCombatDefend_damage(0),
      CloseCombatDefend_radius(0),
      CloseCombatDefend_frequency(0),
@@ -21,9 +22,12 @@ CloseCombatDefend::CloseCombatDefend(QPoint coordinate,DifferentScence* scence,c
      setScence(scence),
      DefendIdentity(" "),
      AppearSound(NULL),
-     DeadSound(NULL)
+     DeadSound(NULL),
+     Way(way)
 {
     Level=1;
+    if(Way==0)
+    {
     srand(int(time(0)));
     int judge=rand()%4+1;
     if(judge==1)
@@ -67,19 +71,74 @@ CloseCombatDefend::CloseCombatDefend(QPoint coordinate,DifferentScence* scence,c
     }
     else if(judge==4)
     {
-        AppearSound=new QSound(":/GuanZhang/GuanXinZhangBao/GuanXinZhangBao_Appear.wav",this);
-        DeadSound=new QSound(":/GuanZhang/GuanXinZhangBao/GuanXinZhangBao_Dead.wav",this);
+        AppearSound=new QSound(":/GuanZhang/GuanXingZhangBao/GuanXingZhangBao_Appear.wav",this);
+        DeadSound=new QSound(":/GuanZhang/GuanXingZhangBao/GuanXingZhangBao_Dead.wav",this);
         AppearSound->play();
-        CloseCombatDefend_picture=QPixmap(":/GuanZhang/GuanXinZhangBao/GuanXinZhangBao.png");
+        CloseCombatDefend_picture=QPixmap(":/GuanZhang/GuanXingZhangBao/GuanXingZhangBao.png");
         QSize PictureSize(200,200);
         CloseCombatDefend_damage=160;
         CloseCombatDefend_frequency=1500;
         CloseCombatDefend_radius=200;
         QPixmap SizePicture=CloseCombatDefend_picture.scaled(PictureSize,Qt::KeepAspectRatio);
         CloseCombatDefend_picture=SizePicture;
-        DefendIdentity="GuanXinZhangBao";
+        DefendIdentity="GuanXingZhangBao";
         CloseCombatDefend_frequencyTimer= new QTimer(this);
         connect(CloseCombatDefend_frequencyTimer,SIGNAL(timeout()),this,SLOT(CutWeiSodier()));
+    }
+    }
+    else if(Way==1)
+    {
+        AppearSound=new QSound(":/LiuHan/LiuShen/LiuShen_Appear.wav",this);
+        DeadSound=new QSound(":/LiuHan/LiuShen/LiuShen_Dead.wav",this);
+        AppearSound->play();
+        CloseCombatDefend_picture=QPixmap(":/LiuHan/LiuShen/LiuShen.png");
+        QSize PictureSize(200,200);
+        QPixmap SizePicture=CloseCombatDefend_picture.scaled(PictureSize,Qt::KeepAspectRatio);
+        CloseCombatDefend_picture=SizePicture;
+        DefendIdentity="LiuShen";
+    }
+    else if(Way==2)
+    {
+        AppearSound=new QSound(":/GuanZhang/GuanXingZhangBao/GuanXingZhangBao_Appear.wav",this);
+        DeadSound=new QSound(":/GuanZhang/GuanXingZhangBao/GuanXingZhangBao_Dead.wav",this);
+        AppearSound->play();
+        CloseCombatDefend_picture=QPixmap(":/GuanZhang/GuanXingZhangBao/GuanXingZhangBao.png");
+        QSize PictureSize(200,200);
+        CloseCombatDefend_damage=160;
+        CloseCombatDefend_frequency=1500;
+        CloseCombatDefend_radius=200;
+        QPixmap SizePicture=CloseCombatDefend_picture.scaled(PictureSize,Qt::KeepAspectRatio);
+        CloseCombatDefend_picture=SizePicture;
+        DefendIdentity="GuanXingZhangBao";
+        CloseCombatDefend_frequencyTimer= new QTimer(this);
+        connect(CloseCombatDefend_frequencyTimer,SIGNAL(timeout()),this,SLOT(CutWeiSodier()));
+    }
+    else if(Way==3)
+    {
+        AppearSound=new QSound(":/HanShen/HanShen_Appear.wav",this);
+        DeadSound=new QSound(":/HanShen/HanShen_Dead.wav",this);
+        AppearSound->play();
+        CloseCombatDefend_picture=QPixmap(":/HanShen/HanShen.png");
+        QSize PictureSize(200,200);
+        CloseCombatDefend_damage=160;
+        CloseCombatDefend_frequency=1000;
+        CloseCombatDefend_radius=370;
+        QPixmap SizePicture=CloseCombatDefend_picture.scaled(PictureSize,Qt::KeepAspectRatio);
+        CloseCombatDefend_picture=SizePicture;
+        DefendIdentity="HanShen";
+        CloseCombatDefend_frequencyTimer= new QTimer(this);
+        connect(CloseCombatDefend_frequencyTimer,SIGNAL(timeout()),this,SLOT(CutWeiSodier()));
+    }
+    else if(Way==4)
+    {
+        AppearSound=new QSound(":/ZhuGe/ZhuGeZhan/ZhuGeZhan_Appear.wav",this);
+        DeadSound=new QSound(":/ZhuGe/ZhuGeZhan/ZhuGeZhan_Dead.wav",this);
+        AppearSound->play();
+        CloseCombatDefend_picture=QPixmap(":/ZhuGe/ZhuGeZhan/ZhuGeZhan.png");
+        QSize PictureSize(200,200);
+        QPixmap SizePicture=CloseCombatDefend_picture.scaled(PictureSize,Qt::KeepAspectRatio);
+        CloseCombatDefend_picture=SizePicture;
+        DefendIdentity="ZhuGeZhan";
     }
 }
 CloseCombatDefend::~CloseCombatDefend()
@@ -164,10 +223,41 @@ void CloseCombatDefend::CutWeiSodier()
     CloseCombatDefend_damage,My_ChooseWeiSodier,setScence);
     if(DefendIdentity=="HanShen")
     {
-        efficacy->ChangePicture();
+        if(Level==2)
+        {
+            efficacy->ChangeVermilion();
+            efficacy->Move();
+//            efficacy->ReturnSound()->play();
+            setScence->AddEfficacy(efficacy);
+        }
+        else
+        {
+            efficacy->ChangePicture();
+            efficacy->Move();
+//            efficacy->ReturnSound()->play();
+            setScence->AddEfficacy(efficacy);
+        }
     }
+    else if(DefendIdentity=="GuanYu")
+    {
+        efficacy->ChangeDragon();
+        efficacy->Move();
+        efficacy->ReturnSound()->play();
+        setScence->AddEfficacy(efficacy);
+    }
+    else if(DefendIdentity=="ZhangFei")
+    {
+            efficacy->ChangeTiger();
+            efficacy->Move();
+            efficacy->ReturnSound()->play();
+            setScence->AddEfficacy(efficacy);
+    }
+    else if(DefendIdentity=="GuanXingZhangBao")
+    {
     efficacy->Move();
+//    efficacy->ReturnSound()->play();
     setScence->AddEfficacy(efficacy);
+    }
     }
 }
 //魏军已死
@@ -197,7 +287,7 @@ void CloseCombatDefend::UpgradeSpirit()
 {
     if(Level==1)
     {
-    if(DefendIdentity=="GuanXinZhangBao")
+    if(DefendIdentity=="GuanXingZhangBao")
     {
     srand(int(time(0)));
     int judge=rand()%2+1;
@@ -297,7 +387,7 @@ void CloseCombatDefend::Encouraged()
     int Cout1=setScence->ReturnCoutLiuShen();
     int Cout2=setScence->ReturnCoutLiuBei();
     CloseCombatDefend_damage=CloseCombatDefend_damage+Cout1*100+Cout2*350;
-    if(CloseCombatDefend_frequency-Cout1*50-Cout2*100>=0)
+    if(CloseCombatDefend_frequency-Cout1*25-Cout2*75>=0)
     CloseCombatDefend_frequency=CloseCombatDefend_frequency-Cout1*25-Cout2*75;
     else
     {

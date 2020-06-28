@@ -23,6 +23,9 @@ public:
     void Move();//移动
     void SetCurrentPoint(QPoint Point);//设置现在的位置
     void ChangePicture();//改变图片，黄忠专用
+    void ChangeDragon();//改变图片，关羽专用
+    void ChangeTiger();//改变图片，张飞专用
+    void ChangeVermilion();//改变图片，黄忠专用
     QPoint CurrentPoint()const;//返回现在的位置
     QSound* ReturnSound();//返回特效音乐
 private:

@@ -33,7 +33,9 @@ SOURCES += \
     routepoint.cpp \
     weisodier.cpp \
     differentscence.cpp \
-    efficacy.cpp
+    efficacy.cpp \
+    endscence.cpp \
+    wind.cpp
 
 HEADERS += \
         widget.h \
@@ -46,7 +48,9 @@ HEADERS += \
     differentscence.h \
     collisionwithcircle.h \
     efficacy.h \
-    sleep.h
+    sleep.h \
+    endscence.h \
+    wind.h
 
 FORMS += \
         widget.ui

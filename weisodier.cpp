@@ -114,7 +114,22 @@ void WeiSodier::march()
         }
         else
         {
-            SetScence->AttackChengdu(1);
+            if(WeiSodier_Kind=="WeiInfantry")
+            {
+                SetScence->AttackChengdu(5);
+            }
+            else if(WeiSodier_Kind=="WeiCavalry")
+            {
+                SetScence->AttackChengdu(3);
+            }
+            else if(WeiSodier_Kind=="ZhongHui")
+            {
+                SetScence->AttackChengdu(10);
+            }
+            else if(WeiSodier_Kind=="DengAi")
+            {
+                SetScence->AttackChengdu(20);
+            }
             SetScence->destroyWeiSodier(this);
             return;
         }
@@ -150,7 +165,22 @@ void WeiSodier::GetDamaged(int Damage)
     WeiSodier_CurrentHP=WeiSodier_CurrentHP-Damage;
     if(WeiSodier_CurrentHP<=0)
     {
-        SetScence->AddMorale(60);
+        if(WeiSodier_Kind=="WeiInfantry")
+        {
+            SetScence->AddMorale(80);
+        }
+        else if(WeiSodier_Kind=="WeiCavalry")
+        {
+            SetScence->AddMorale(60);
+        }
+        else if(WeiSodier_Kind=="ZhongHui")
+        {
+            SetScence->AddMorale(150);
+        }
+        else if(WeiSodier_Kind=="DengAi")
+        {
+            SetScence->AddMorale(200);
+        }
         GetRemoved();
     }
 }
@@ -187,16 +217,15 @@ void WeiSodier::ChangeWeiSodier(int Order)
 {
     if(Order==1)
     {
-    srand(int(time(0)));
-    int judge=rand()%2+1;
+        int judge=rand()%2+1;
     if(judge==1)
     {
         WeiSodier_Picture=QPixmap(":/WeiSodier/WeiInfantry.png");
         QSize PictureSize(125,125);
         QPixmap SizePicture=WeiSodier_Picture.scaled(PictureSize,Qt::KeepAspectRatio);
         WeiSodier_Picture=SizePicture;
-        WeiSodier_MaxHP=1500;
-        WeiSodier_CurrentHP=1500;
+        WeiSodier_MaxHP=6000;
+        WeiSodier_CurrentHP=6000;
         WeiSodier_Speed=1.0;
         WeiSodier_Kind="WeiInfantry";
     }
@@ -206,8 +235,8 @@ void WeiSodier::ChangeWeiSodier(int Order)
         QSize PictureSize(125,125);
         QPixmap SizePicture=WeiSodier_Picture.scaled(PictureSize,Qt::KeepAspectRatio);
         WeiSodier_Picture=SizePicture;
-        WeiSodier_MaxHP=800;
-        WeiSodier_CurrentHP=800;
+        WeiSodier_MaxHP=3000;
+        WeiSodier_CurrentHP=3000;
         WeiSodier_Speed=2.0;
         WeiSodier_Kind="WeiCavalry";
     }
@@ -218,20 +247,20 @@ void WeiSodier::ChangeWeiSodier(int Order)
         QSize PictureSize(150,150);
         QPixmap SizePicture=WeiSodier_Picture.scaled(PictureSize,Qt::KeepAspectRatio);
         WeiSodier_Picture=SizePicture;
-        WeiSodier_MaxHP=10000;
-        WeiSodier_CurrentHP=10000;
-        WeiSodier_Speed=0.5;
+        WeiSodier_MaxHP=15000;
+        WeiSodier_CurrentHP=15000;
+        WeiSodier_Speed=0.8;
         WeiSodier_Kind="ZhongHui";
     }
     else if(Order==3)
     {
-        WeiSodier_Picture=QPixmap(":/WeiGeneral/ZhongHui.png");
+        WeiSodier_Picture=QPixmap(":/WeiGeneral/DengAi.png");
         QSize PictureSize(150,150);
         QPixmap SizePicture=WeiSodier_Picture.scaled(PictureSize,Qt::KeepAspectRatio);
         WeiSodier_Picture=SizePicture;
-        WeiSodier_MaxHP=10000;
-        WeiSodier_CurrentHP=10000;
-        WeiSodier_Speed=0.5;
+        WeiSodier_MaxHP=20000;
+        WeiSodier_CurrentHP=20000;
+        WeiSodier_Speed=1.0;
         WeiSodier_Kind="DengAi";
     }
 
@@ -239,7 +268,12 @@ void WeiSodier::ChangeWeiSodier(int Order)
 //随着时间增强魏军
 void WeiSodier::StrengthWeiSodier()
 {
-        WeiSodier_Speed=WeiSodier_Speed*1.0005;//1.005的900次方是1.568，所以经过15分钟后，魏军的速度将变为原来的1.5倍左右
-        WeiSodier_CurrentHP=WeiSodier_CurrentHP*1.0005;//魏军在被攻击过程中也在不断回血
-        WeiSodier_MaxHP=WeiSodier_MaxHP*1.0005;//经过15分钟后，魏军的血量变为原来的1.5倍
+        WeiSodier_Speed=WeiSodier_Speed*1.001;//1.005的900次方是2.458，所以经过15分钟后，魏军的速度将变为原来的2.5倍左右
+        WeiSodier_CurrentHP=WeiSodier_CurrentHP*1.001;//魏军在被攻击过程中也在不断回血
+        WeiSodier_MaxHP=WeiSodier_MaxHP*1.001;//经过15分钟后，魏军的血量变为原来的2.5倍
+}
+//返回魏军现在的血量
+int WeiSodier::ReturnCurrentHP()
+{
+    return WeiSodier_CurrentHP;
 }

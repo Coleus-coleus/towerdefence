@@ -18,20 +18,55 @@
 #include <QSound> //多媒体模块下的音效文件
 #include "sleep.h"
 #include <QPushButton>
+#include "endscence.h"
+#include "wind.h"
 class CloseCombatDefend;
+int g_unused=(srand(time(NULL)),0);
 //构造函数的实现
 DifferentScence::DifferentScence(QWidget *parent) :
     QWidget(parent),
     WeiSodier_Batch(1),
     WarWin(false),
     WarLose(false),
-    ChengDuCitizenry(100),
+    ChengDuCitizenry(10),
     ShuMorale(1000)
 {
+    this->setAttribute(Qt::WA_DeleteOnClose,true);
+    btnAddMorale=new QPushButton("增加士气",this);//增加士气,每次增加1000
+    connect(btnAddMorale,&QPushButton::clicked,this,[=]()
+    {
+        ShuMorale=ShuMorale+1000;
+    });
+    Defend_Kind=" ";
+    btnZhuGeZhan=new QPushButton("诸葛瞻",this);//标记诸葛瞻
+    btnHanShen=new QPushButton("黄忠",this);//标记黄忠
+    btnGuanXingZhangBao=new QPushButton("关兴张苞",this);//标记关兴张苞
+    btnLiuShen=new QPushButton("刘谌",this);//标记刘谌
+    connect(btnZhuGeZhan,&QPushButton::clicked,this,[=]()
+    {
+        ChangeKind("ZhuGeZhan");
+    });
+    connect(btnGuanXingZhangBao,&QPushButton::clicked,this,[=]()
+    {
+        ChangeKind("GuanXingZhangBao");
+    });
+    connect(btnHanShen,&QPushButton::clicked,this,[=]()
+    {
+        ChangeKind("HanShen");
+    });
+    connect(btnLiuShen,&QPushButton::clicked,this,[=]()
+    {
+        ChangeKind("LiuShen");
+    });
+    CoutZhuGeLiang=0;
+    CoutZhuGeZhan=0;
+    Endscence=new EndScence;//实例化，结束场景
+    IsEndless=false;
     btnAddBatch=new QPushButton("增加总批数",this);//增加总批数按钮
     btnAddCurrentBatch=new QPushButton("增加当前批数",this);//增加当前批数按钮
     btnDecreaseBatch=new QPushButton("减少总批数",this);//减少总批数按钮
     btnDecreaseCurrentBatch=new QPushButton("减少当前批数",this);//减少当前批数按钮
+    btnEndless=new QPushButton("无尽模式",this);//无尽模式按钮
     connect(btnAddBatch,&QPushButton::clicked,this,[=]()
     {
         AddBatch();
@@ -47,6 +82,10 @@ DifferentScence::DifferentScence(QWidget *parent) :
     connect(btnDecreaseCurrentBatch,&QPushButton::clicked,this,[=]()
     {
         DecreaseCurrentBatch();
+    });
+    connect(btnEndless,&QPushButton::clicked,this,[=]()
+    {
+        Endless();
     });
     Batch=60;
     CoutLiuBei=0;
@@ -71,6 +110,8 @@ DifferentScence::DifferentScence(QWidget *parent) :
     timer->start(20);
     WeiSodier_Timer=new QTimer(this);
     Liu_Timer=new QTimer(this);
+    ZhuGeLiangTimer=new QTimer(this);
+    ZhuGeZhanTimer=new QTimer(this);
     connect(WeiSodier_Timer,&QTimer::timeout,this,[=]()
     {
         WeiTime=WeiTime+10;
@@ -80,6 +121,8 @@ DifferentScence::DifferentScence(QWidget *parent) :
     {
         int i=0;
         int j=0;
+        int m=0;
+        int n=0;
         foreach (CloseCombatDefend *closeCombatDefend, CloseCombatDefend_List )
         {
             if(closeCombatDefend->ReturnIdentity()=="LiuShen")
@@ -90,9 +133,19 @@ DifferentScence::DifferentScence(QWidget *parent) :
             {
                 j++;
             }
+            else if(closeCombatDefend->ReturnIdentity()=="ZhuGeLiang")
+            {
+                m++;
+            }
+            else if(closeCombatDefend->ReturnIdentity()=="ZhuGeZhan")
+            {
+                n++;
+            }
         }
         CoutLiuShen=i;
         CoutLiuBei=j;
+        CoutZhuGeLiang=m;
+        CoutZhuGeZhan=n;
         foreach (CloseCombatDefend *closeCombatDefend, CloseCombatDefend_List )
         {
             closeCombatDefend->Encouraged();
@@ -100,17 +153,104 @@ DifferentScence::DifferentScence(QWidget *parent) :
         CoutLiuShenRecord=CoutLiuShen;
         CoutLiuBeiRecord=CoutLiuBei;
     });
+    connect(ZhuGeLiangTimer,&QTimer::timeout,this,[=]()
+    {
+        for(int num=0;num<CoutZhuGeLiang;num++)
+        {
+        foreach (WeiSodier *weisodier, WeiSodier_List)
+        {
+            Wind *wind=new Wind(weisodier->Coordinate(),weisodier->Coordinate(),25,weisodier,this);
+            wind->ChangePicture();
+            wind->Appear();
+            this->AddWind(wind);
+//            QSound *Wind_Sound=new QSound(":/Wind/Wind.wav",this);
+//            Wind_Sound->play();
+            if(weisodier->ReturnCurrentHP()<=0)
+            {
+                destroyWeiSodier(weisodier);
+            }
+        }
+        }
+    });
+    connect(ZhuGeZhanTimer,&QTimer::timeout,this,[=]()
+    {
+        for(int num=0;num<CoutZhuGeZhan;num++)
+        {
+        foreach (WeiSodier *weisodier, WeiSodier_List)
+        {
+            Wind *wind=new Wind(weisodier->Coordinate(),weisodier->Coordinate(),50,weisodier,this);
+            wind->Appear();
+            this->AddWind(wind);
+//            QSound *Wind_Sound=new QSound(":/Wind/Wind.wav",this);
+//            Wind_Sound->play();
+            if(weisodier->ReturnCurrentHP()<=0)
+            {
+                destroyWeiSodier(weisodier);
+            }
+        }
+        }
+    });
+    ZhuGeZhanTimer->start(3000);
+    ZhuGeLiangTimer->start(1500);
 }
 //传入选关信号
 void DifferentScence::ChangeScence(QString flag)
 {
     Flag=flag;
+    if(Flag=="AzureDragonScence")
+    {
+        btnLiuShen->move(1430,380);
+        btnGuanXingZhangBao->move(1430,420);
+        btnZhuGeZhan->move(1430,460);
+        btnHanShen->move(1430,500);
+        btnAddBatch->move(1430,160);
+        btnAddCurrentBatch->move(1430,200);
+        btnDecreaseBatch->move(1430,240);
+        btnDecreaseCurrentBatch->move(1430,280);
+        btnEndless->move(1430,320);
+        btnAddMorale->move(1430,560);
+    }
+    else if(Flag=="VermilionBirdScence")
+    {
+        btnLiuShen->move(800,0);
+        btnGuanXingZhangBao->move(800,40);
+        btnZhuGeZhan->move(800,80);
+        btnHanShen->move(800,120);
+        btnAddBatch->move(1430,160);
+        btnAddCurrentBatch->move(1430,200);
+        btnDecreaseBatch->move(1430,240);
+        btnDecreaseCurrentBatch->move(1430,280);
+        btnEndless->move(1430,320);
+        btnAddMorale->move(800,160);
+    }
+    else if(Flag=="WhiteTigerScence")
+    {
+        btnLiuShen->move(890,130);
+        btnGuanXingZhangBao->move(890,90);
+        btnZhuGeZhan->move(890,50);
+        btnHanShen->move(1010,130);
+        btnDecreaseCurrentBatch->move(1010,90);
+        btnEndless->move(1010,50);
+        btnAddBatch->move(1130,50);
+        btnAddCurrentBatch->move(1130,90);
+        btnDecreaseBatch->move(1130,130);
+        btnAddMorale->move(1430,160);
+    }
+    else if(Flag=="BlackTortoiseScence")
+    {
+        btnLiuShen->move(50,340);
+        btnGuanXingZhangBao->move(50,380);
+        btnZhuGeZhan->move(50,420);
+        btnHanShen->move(50,460);
+        btnAddBatch->move(50,120);
+        btnAddCurrentBatch->move(50,160);
+        btnDecreaseBatch->move(50,200);
+        btnDecreaseCurrentBatch->move(50,240);
+        btnEndless->move(50,280);
+        btnAddMorale->move(50,60);
+    }
     LoadTowerCoordinate();
     LoadRoutePoint();
-    btnAddBatch->move(1430,160);
-    btnAddCurrentBatch->move(1430,200);
-    btnDecreaseBatch->move(1430,240);
-    btnDecreaseCurrentBatch->move(1430,280);
     QTimer::singleShot(300,this,SLOT(WarBegin()));//开始游戏
 }
 //重写绘画事件(载入图片)
@@ -122,28 +262,22 @@ void DifferentScence::paintEvent(QPaintEvent *)
     {
         if(WarLose==true)
         {
-            QString Text="战争失败";
-            QPainter Painter(this);
-            QPixmap pix;
-            pix.load(":/background/WarLose.png");
-            Painter.drawPixmap(0,0,this->width(),this->height(),pix);
-            Painter.setPen(QPen(Qt::red));
-            Painter.drawText(rect(),Qt::AlignCenter,Text);
-            return;
+            ScenceSound->stop();
+            this->close();
+            Endscence->EndFlag("WarLose");
+            Endscence->show();
+            Endscence->ChangSound();
+            Endscence->ReturnEndMusic()->play();
          }
         else if(WarWin==true)
         {
-            QString Text="战争胜利";
-            QPainter Painter(this);
-            QPixmap pix;
-            pix.load(":/background/WarLose.png");
-            Painter.drawPixmap(0,0,this->width(),this->height(),pix);
-            Painter.setPen(QPen(Qt::red));
-            Painter.drawText(rect(),Qt::AlignCenter,Text);
-            return;
-
+            ScenceSound->stop();
+            this->close();
+            Endscence->EndFlag("WarWin");
+            Endscence->show();
+            Endscence->ChangSound();
+            Endscence->ReturnEndMusic()->play();
         }
-
     QPixmap pix;
     pix.load(":/background/Azure DragonScence.png");
     QPainter painter(this);
@@ -168,6 +302,10 @@ void DifferentScence::paintEvent(QPaintEvent *)
     {
         efficacy->draw(&painter);
     }
+    foreach (const Wind *wind, Wind_List)
+    {
+        wind->draw(&painter);
+    }
     DrawBatch(&painter);
     DrawChengDuCitizenry(&painter);
     DrawShuMorale(&painter);
@@ -178,26 +316,21 @@ void DifferentScence::paintEvent(QPaintEvent *)
     {
         if(WarLose==true)
         {
-            QString Text="战争失败";
-            QPainter Painter(this);
-            QPixmap pix;
-            pix.load(":/background/WarLose.png");
-            Painter.drawPixmap(0,0,this->width(),this->height(),pix);
-            Painter.setPen(QPen(Qt::red));
-            Painter.drawText(rect(),Qt::AlignCenter,Text);
-            return;
+            ScenceSound->stop();
+            this->close();
+            Endscence->EndFlag("WarLose");
+            Endscence->show();
+            Endscence->ChangSound();
+            Endscence->ReturnEndMusic()->play();
          }
         else if(WarWin==true)
         {
-            QString Text="战争胜利";
-            QPainter Painter(this);
-            QPixmap pix;
-            pix.load(":/background/WarLose.png");
-            Painter.drawPixmap(0,0,this->width(),this->height(),pix);
-            Painter.setPen(QPen(Qt::red));
-            Painter.drawText(rect(),Qt::AlignCenter,Text);
-            return;
-
+            ScenceSound->stop();
+            this->close();
+            Endscence->EndFlag("WarWin");
+            Endscence->show();
+            Endscence->ChangSound();
+            Endscence->ReturnEndMusic()->play();
         }
 
     QPixmap pix;
@@ -224,6 +357,10 @@ void DifferentScence::paintEvent(QPaintEvent *)
     {
         efficacy->draw(&painter);
     }
+    foreach (const Wind *wind, Wind_List)
+    {
+        wind->draw(&painter);
+    }
     DrawBatch(&painter);
     DrawChengDuCitizenry(&painter);
     DrawShuMorale(&painter);
@@ -233,26 +370,21 @@ void DifferentScence::paintEvent(QPaintEvent *)
     {
         if(WarLose==true)
         {
-            QString Text="战争失败";
-            QPainter Painter(this);
-            QPixmap pix;
-            pix.load(":/background/WarLose.png");
-            Painter.drawPixmap(0,0,this->width(),this->height(),pix);
-            Painter.setPen(QPen(Qt::red));
-            Painter.drawText(rect(),Qt::AlignCenter,Text);
-            return;
+            ScenceSound->stop();
+            this->close();
+            Endscence->EndFlag("WarLose");
+            Endscence->show();
+            Endscence->ChangSound();
+            Endscence->ReturnEndMusic()->play();
          }
         else if(WarWin==true)
         {
-            QString Text="战争胜利";
-            QPainter Painter(this);
-            QPixmap pix;
-            pix.load(":/background/WarLose.png");
-            Painter.drawPixmap(0,0,this->width(),this->height(),pix);
-            Painter.setPen(QPen(Qt::red));
-            Painter.drawText(rect(),Qt::AlignCenter,Text);
-            return;
-
+            ScenceSound->stop();
+            this->close();
+            Endscence->EndFlag("WarWin");
+            Endscence->show();
+            Endscence->ChangSound();
+            Endscence->ReturnEndMusic()->play();
         }
 
         QPixmap pix;
@@ -279,6 +411,10 @@ void DifferentScence::paintEvent(QPaintEvent *)
         {
             efficacy->draw(&painter);
         }
+        foreach (const Wind *wind, Wind_List)
+        {
+            wind->draw(&painter);
+        }
         DrawBatch(&painter);
         DrawChengDuCitizenry(&painter);
         DrawShuMorale(&painter);
@@ -288,51 +424,22 @@ void DifferentScence::paintEvent(QPaintEvent *)
     {
         if(WarLose==true)
         {
-            QString Text="战争失败";
-            QPainter Painter(this);
-            QPixmap pix;
-            pix.load(":/background/WarLose.png");
-            Painter.drawPixmap(0,0,this->width(),this->height(),pix);
-            Painter.setPen(QPen(Qt::red));
-            Painter.drawText(rect(),Qt::AlignCenter,Text);
-            return;
+            ScenceSound->stop();
+            this->close();
+            Endscence->EndFlag("WarLose");
+            Endscence->show();
+            Endscence->ChangSound();
+            Endscence->ReturnEndMusic()->play();
          }
         else if(WarWin==true)
         {
-            QString Text="战争胜利";
-            QPainter Painter(this);
-            QPixmap pix;
-            pix.load(":/background/WarLose.png");
-            Painter.drawPixmap(0,0,this->width(),this->height(),pix);
-            Painter.setPen(QPen(Qt::red));
-            Painter.drawText(rect(),Qt::AlignCenter,Text);
-            return;
-
+            ScenceSound->stop();
+            this->close();
+            Endscence->EndFlag("WarWin");
+            Endscence->show();
+            Endscence->ChangSound();
+            Endscence->ReturnEndMusic()->play();
         }
-        if(WarLose==true)
-        {
-            QString Text="战争失败";
-            QPainter Painter(this);
-            QPixmap pix;
-            pix.load(":/background/WarLose.png");
-            Painter.drawPixmap(0,0,this->width(),this->height(),pix);
-            Painter.setPen(QPen(Qt::red));
-            Painter.drawText(rect(),Qt::AlignCenter,Text);
-            return;
-         }
-        else if(WarWin==true)
-        {
-            QString Text="战争胜利";
-            QPainter Painter(this);
-            QPixmap pix;
-            pix.load(":/background/WarLose.png");
-            Painter.drawPixmap(0,0,this->width(),this->height(),pix);
-            Painter.setPen(QPen(Qt::red));
-            Painter.drawText(rect(),Qt::AlignCenter,Text);
-            return;
-
-        }
-
     QPixmap pix;
     pix.load(":/background/White TigerScence.png");
     QPainter painter(this);
@@ -357,6 +464,10 @@ void DifferentScence::paintEvent(QPaintEvent *)
     {
         efficacy->draw(&painter);
     }
+    foreach (const Wind *wind, Wind_List)
+    {
+        wind->draw(&painter);
+    }
     DrawBatch(&painter);
     DrawChengDuCitizenry(&painter);
     DrawShuMorale(&painter);
@@ -378,15 +489,72 @@ void DifferentScence::mousePressEvent(QMouseEvent *event)
             {
                 if(WhetherWillRespond()&&it->inArea(MousePressCoordinate)&&!it->existence())
                 {
-                    if(ShuMorale>=100)
+                    if(Defend_Kind==" ")
                     {
-                    ShuMorale=ShuMorale-100;
-                    it->tower_exist(true);
-                    CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this);
-                    CloseCombatDefend_List.push_back(closeCombatDefend);
-                    update();
-                    break;
+                        if(ShuMorale>=150)
+                        {
+                            ShuMorale=ShuMorale-150;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
                     }
+                    else if(Defend_Kind=="LiuShen")
+                    {
+                        if(ShuMorale>=200)
+                        {
+                            ShuMorale=ShuMorale-200;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,1);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+                    else if(Defend_Kind=="GuanXingZhangBao")
+                    {
+                        if(ShuMorale>=100)
+                        {
+                            ShuMorale=ShuMorale-100;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,2);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+                    else if(Defend_Kind=="HanShen")
+                    {
+                        if(ShuMorale>=150)
+                        {
+                            ShuMorale=ShuMorale-150;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,3);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+                    else if(Defend_Kind=="ZhuGeZhan")
+                    {
+                        if(ShuMorale>=300)
+                        {
+                            ShuMorale=ShuMorale-300;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,4);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+
                 }
                 ++it;
             }
@@ -409,11 +577,45 @@ void DifferentScence::mousePressEvent(QMouseEvent *event)
                                 CloseCombatDefend_List[i]->StopAttackWeiSodier();
                                 if(CloseCombatDefend_List[i]->ReturnLevel()==2)
                                 {
-                                    ShuMorale=ShuMorale+400;
+                                    if(CloseCombatDefend_List[i]->ReturnIdentity()=="LiuBei")
+                                    {
+                                        ShuMorale=ShuMorale+560;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhuGeLiang")
+                                    {
+                                        ShuMorale=ShuMorale+720;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="HanShen")
+                                    {
+                                        ShuMorale=ShuMorale+360;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="GuanYu")
+                                    {
+                                         ShuMorale=ShuMorale+400;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhangFei")
+                                    {
+                                        ShuMorale=ShuMorale+400;
+                                    }
                                 }
                                 else if(CloseCombatDefend_List[i]->ReturnLevel()==1)
                                 {
-                                    ShuMorale=ShuMorale+80;
+                                    if(CloseCombatDefend_List[i]->ReturnIdentity()=="LiuShen")
+                                    {
+                                        ShuMorale=ShuMorale+160;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhuGeZhan")
+                                    {
+                                        ShuMorale=ShuMorale+240;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="HanShen")
+                                    {
+                                        ShuMorale=ShuMorale+120;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="GuanXingZhangBao")
+                                    {
+                                         ShuMorale=ShuMorale+80;
+                                    }
                                 }
                                 CloseCombatDefend_List.removeOne(CloseCombatDefend_List[i]);
                                 it->tower_exist(false);
@@ -437,15 +639,72 @@ void DifferentScence::mousePressEvent(QMouseEvent *event)
             {
                 if(WhetherWillRespond()&&it->inArea(MousePressCoordinate)&&!it->existence())
                 {
-                    if(ShuMorale>=100)
+                    if(Defend_Kind==" ")
                     {
-                    ShuMorale=ShuMorale-100;
-                    it->tower_exist(true);
-                    CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this);
-                    CloseCombatDefend_List.push_back(closeCombatDefend);
-                    update();
-                    break;
+                        if(ShuMorale>=150)
+                        {
+                            ShuMorale=ShuMorale-150;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
                     }
+                    else if(Defend_Kind=="LiuShen")
+                    {
+                        if(ShuMorale>=200)
+                        {
+                            ShuMorale=ShuMorale-200;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,1);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+                    else if(Defend_Kind=="GuanXingZhangBao")
+                    {
+                        if(ShuMorale>=100)
+                        {
+                            ShuMorale=ShuMorale-100;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,2);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+                    else if(Defend_Kind=="HanShen")
+                    {
+                        if(ShuMorale>=150)
+                        {
+                            ShuMorale=ShuMorale-150;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,3);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+                    else if(Defend_Kind=="ZhuGeZhan")
+                    {
+                        if(ShuMorale>=300)
+                        {
+                            ShuMorale=ShuMorale-300;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,4);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+
                 }
                 ++it;
             }
@@ -463,20 +722,54 @@ void DifferentScence::mousePressEvent(QMouseEvent *event)
                         QPoint point=CloseCombatDefend_List[i]->Coordiante();
                         if(point==it->tower_centercoordinate())
                         {
-                            CloseCombatDefend_List[i]->ReturnAppearSound()->stop();
-                            CloseCombatDefend_List[i]->ReturnDeadSound()->play();
-                            CloseCombatDefend_List[i]->StopAttackWeiSodier();
-                            if(CloseCombatDefend_List[i]->ReturnLevel()==2)
-                            {
-                                ShuMorale=ShuMorale+400;
-                            }
-                            else if(CloseCombatDefend_List[i]->ReturnLevel()==1)
-                            {
-                                ShuMorale=ShuMorale+80;
-                            }
-                            CloseCombatDefend_List.removeOne(CloseCombatDefend_List[i]);
-                            it->tower_exist(false);
-                            break;
+                                CloseCombatDefend_List[i]->ReturnAppearSound()->stop();
+                                CloseCombatDefend_List[i]->ReturnDeadSound()->play();
+                                CloseCombatDefend_List[i]->StopAttackWeiSodier();
+                                if(CloseCombatDefend_List[i]->ReturnLevel()==2)
+                                {
+                                    if(CloseCombatDefend_List[i]->ReturnIdentity()=="LiuBei")
+                                    {
+                                        ShuMorale=ShuMorale+560;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhuGeLiang")
+                                    {
+                                        ShuMorale=ShuMorale+720;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="HanShen")
+                                    {
+                                        ShuMorale=ShuMorale+360;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="GuanYu")
+                                    {
+                                         ShuMorale=ShuMorale+400;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhangFei")
+                                    {
+                                        ShuMorale=ShuMorale+400;
+                                    }
+                                }
+                                else if(CloseCombatDefend_List[i]->ReturnLevel()==1)
+                                {
+                                    if(CloseCombatDefend_List[i]->ReturnIdentity()=="LiuShen")
+                                    {
+                                        ShuMorale=ShuMorale+160;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhuGeZhan")
+                                    {
+                                        ShuMorale=ShuMorale+240;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="HanShen")
+                                    {
+                                        ShuMorale=ShuMorale+120;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="GuanXingZhangBao")
+                                    {
+                                         ShuMorale=ShuMorale+80;
+                                    }
+                                }
+                                CloseCombatDefend_List.removeOne(CloseCombatDefend_List[i]);
+                                it->tower_exist(false);
+                                break;
                         }
                     }
                     break;
@@ -486,7 +779,7 @@ void DifferentScence::mousePressEvent(QMouseEvent *event)
         }
         singleClicked=false;
     }
-    else if(Flag=="VermilionBirdScence")
+    if(Flag=="VermilionBirdScence")
     {
         if(event->button()==Qt::LeftButton)
         {
@@ -496,114 +789,295 @@ void DifferentScence::mousePressEvent(QMouseEvent *event)
             {
                 if(WhetherWillRespond()&&it->inArea(MousePressCoordinate)&&!it->existence())
                 {
-                    if(ShuMorale>=100)
+                    if(Defend_Kind==" ")
                     {
-                    ShuMorale=ShuMorale-100;
-                    it->tower_exist(true);
-                    CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this);
-                    CloseCombatDefend_List.push_back(closeCombatDefend);
-                    update();
-                    break;
-                    }
-                }
-                ++it;
-            }
-        }
-        else if(event->button()==Qt::RightButton)
-        {
-            QPoint MousePressCoordinate=event->pos();
-            auto it=VermilionBirdScenceTower_List.begin();
-            while(it!=VermilionBirdScenceTower_List.end())
-            {
-                if(it->inArea(MousePressCoordinate)&&it->existence())
-                {
-                    for(int i=0;i<CloseCombatDefend_List.size();i++)
-                    {
-                        QPoint point=CloseCombatDefend_List[i]->Coordiante();
-                        if(point==it->tower_centercoordinate())
+                        if(ShuMorale>=150)
                         {
-                            CloseCombatDefend_List[i]->ReturnAppearSound()->stop();
-                            CloseCombatDefend_List[i]->ReturnDeadSound()->play();
-                            CloseCombatDefend_List[i]->StopAttackWeiSodier();
-                            if(CloseCombatDefend_List[i]->ReturnLevel()==2)
-                            {
-                                ShuMorale=ShuMorale+400;
-                            }
-                            else if(CloseCombatDefend_List[i]->ReturnLevel()==1)
-                            {
-                                ShuMorale=ShuMorale+80;
-                            }
-                            CloseCombatDefend_List.removeOne(CloseCombatDefend_List[i]);
-                            it->tower_exist(false);
+                            ShuMorale=ShuMorale-150;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
                             break;
                         }
                     }
-                    break;
-                }
-                ++it;
-            }
-        }
-        singleClicked=false;
-    }
-    else if(Flag=="WhiteTigerScence")
-    {
-        if(event->button()==Qt::LeftButton)
-        {
-            QPoint MousePressCoordinate=event->pos();
-            auto it=WhiteTigerScenceTower_List.begin();
-            while(it!=WhiteTigerScenceTower_List.end())
-            {
-                if(WhetherWillRespond()&&it->inArea(MousePressCoordinate)&&!it->existence())
-                {
-                    if(ShuMorale>=100)
+                    else if(Defend_Kind=="LiuShen")
                     {
-                    ShuMorale=ShuMorale-100;
-                    it->tower_exist(true);
-                    CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this);
-                    CloseCombatDefend_List.push_back(closeCombatDefend);
-                    update();
-                    break;
-                    }
-                }
-                ++it;
-            }
-        }
-        else if(event->button()==Qt::RightButton)
-        {
-            QPoint MousePressCoordinate=event->pos();
-            auto it=WhiteTigerScenceTower_List.begin();
-            while(it!=WhiteTigerScenceTower_List.end())
-            {
-                if(it->inArea(MousePressCoordinate)&&it->existence())
-                {
-                    for(int i=0;i<CloseCombatDefend_List.size();i++)
-                    {
-                        QPoint point=CloseCombatDefend_List[i]->Coordiante();
-                        if(point==it->tower_centercoordinate())
+                        if(ShuMorale>=200)
                         {
-                            CloseCombatDefend_List[i]->ReturnAppearSound()->stop();
-                            CloseCombatDefend_List[i]->ReturnDeadSound()->play();
-                            CloseCombatDefend_List[i]->StopAttackWeiSodier();
-                            if(CloseCombatDefend_List[i]->ReturnLevel()==2)
-                            {
-                                ShuMorale=ShuMorale+400;
-                            }
-                            else if(CloseCombatDefend_List[i]->ReturnLevel()==1)
-                            {
-                                ShuMorale=ShuMorale+80;
-                            }
-                            CloseCombatDefend_List.removeOne(CloseCombatDefend_List[i]);
-                            it->tower_exist(false);
+                            ShuMorale=ShuMorale-200;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,1);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
                             break;
                         }
                     }
-                    break;
-                }
-                ++it;
-            }
-        }
-        singleClicked=false;
+                    else if(Defend_Kind=="GuanXingZhangBao")
+                    {
+                        if(ShuMorale>=100)
+                        {
+                            ShuMorale=ShuMorale-100;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,2);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+                    else if(Defend_Kind=="HanShen")
+                    {
+                        if(ShuMorale>=150)
+                        {
+                            ShuMorale=ShuMorale-150;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,3);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+                    else if(Defend_Kind=="ZhuGeZhan")
+                    {
+                        if(ShuMorale>=300)
+                        {
+                            ShuMorale=ShuMorale-300;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,4);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
 
+                }
+                ++it;
+            }
+        }
+        else if(event->button()==Qt::RightButton)
+        {
+            QPoint MousePressCoordinate=event->pos();
+            auto it=VermilionBirdScenceTower_List.begin();
+            while(it!=VermilionBirdScenceTower_List.end())
+            {
+                if(it->inArea(MousePressCoordinate)&&it->existence())
+                {
+                    for(int i=0;i<CloseCombatDefend_List.size();i++)
+                    {
+                        QPoint point=CloseCombatDefend_List[i]->Coordiante();
+                        if(point==it->tower_centercoordinate())
+                        {
+                                CloseCombatDefend_List[i]->ReturnAppearSound()->stop();
+                                CloseCombatDefend_List[i]->ReturnDeadSound()->play();
+                                CloseCombatDefend_List[i]->StopAttackWeiSodier();
+                                if(CloseCombatDefend_List[i]->ReturnLevel()==2)
+                                {
+                                    if(CloseCombatDefend_List[i]->ReturnIdentity()=="LiuBei")
+                                    {
+                                        ShuMorale=ShuMorale+560;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhuGeLiang")
+                                    {
+                                        ShuMorale=ShuMorale+720;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="HanShen")
+                                    {
+                                        ShuMorale=ShuMorale+360;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="GuanYu")
+                                    {
+                                         ShuMorale=ShuMorale+400;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhangFei")
+                                    {
+                                        ShuMorale=ShuMorale+400;
+                                    }
+                                }
+                                else if(CloseCombatDefend_List[i]->ReturnLevel()==1)
+                                {
+                                    if(CloseCombatDefend_List[i]->ReturnIdentity()=="LiuShen")
+                                    {
+                                        ShuMorale=ShuMorale+160;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhuGeZhan")
+                                    {
+                                        ShuMorale=ShuMorale+240;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="HanShen")
+                                    {
+                                        ShuMorale=ShuMorale+120;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="GuanXingZhangBao")
+                                    {
+                                         ShuMorale=ShuMorale+80;
+                                    }
+                                }
+                                CloseCombatDefend_List.removeOne(CloseCombatDefend_List[i]);
+                                it->tower_exist(false);
+                                break;
+                        }
+                    }
+                    break;
+                }
+                ++it;
+            }
+        }
+        singleClicked=false;
+    }
+    if(Flag=="WhiteTigerScence")
+    {
+        if(event->button()==Qt::LeftButton)
+        {
+            QPoint MousePressCoordinate=event->pos();
+            auto it=WhiteTigerScenceTower_List.begin();
+            while(it!=WhiteTigerScenceTower_List.end())
+            {
+                if(WhetherWillRespond()&&it->inArea(MousePressCoordinate)&&!it->existence())
+                {
+                    if(Defend_Kind==" ")
+                    {
+                        if(ShuMorale>=150)
+                        {
+                            ShuMorale=ShuMorale-150;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+                    else if(Defend_Kind=="LiuShen")
+                    {
+                        if(ShuMorale>=200)
+                        {
+                            ShuMorale=ShuMorale-200;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,1);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+                    else if(Defend_Kind=="GuanXingZhangBao")
+                    {
+                        if(ShuMorale>=100)
+                        {
+                            ShuMorale=ShuMorale-100;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,2);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+                    else if(Defend_Kind=="HanShen")
+                    {
+                        if(ShuMorale>=150)
+                        {
+                            ShuMorale=ShuMorale-150;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,3);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+                    else if(Defend_Kind=="ZhuGeZhan")
+                    {
+                        if(ShuMorale>=300)
+                        {
+                            ShuMorale=ShuMorale-300;
+                            it->tower_exist(true);
+                            CloseCombatDefend *closeCombatDefend=new CloseCombatDefend(it->tower_centercoordinate(),this,4);
+                            Defend_Kind=" ";
+                            CloseCombatDefend_List.push_back(closeCombatDefend);
+                            update();
+                            break;
+                        }
+                    }
+
+                }
+                ++it;
+            }
+        }
+        else if(event->button()==Qt::RightButton)
+        {
+            QPoint MousePressCoordinate=event->pos();
+            auto it=WhiteTigerScenceTower_List.begin();
+            while(it!=WhiteTigerScenceTower_List.end())
+            {
+                if(it->inArea(MousePressCoordinate)&&it->existence())
+                {
+                    for(int i=0;i<CloseCombatDefend_List.size();i++)
+                    {
+                        QPoint point=CloseCombatDefend_List[i]->Coordiante();
+                        if(point==it->tower_centercoordinate())
+                        {
+                                CloseCombatDefend_List[i]->ReturnAppearSound()->stop();
+                                CloseCombatDefend_List[i]->ReturnDeadSound()->play();
+                                CloseCombatDefend_List[i]->StopAttackWeiSodier();
+                                if(CloseCombatDefend_List[i]->ReturnLevel()==2)
+                                {
+                                    if(CloseCombatDefend_List[i]->ReturnIdentity()=="LiuBei")
+                                    {
+                                        ShuMorale=ShuMorale+560;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhuGeLiang")
+                                    {
+                                        ShuMorale=ShuMorale+720;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="HanShen")
+                                    {
+                                        ShuMorale=ShuMorale+360;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="GuanYu")
+                                    {
+                                         ShuMorale=ShuMorale+400;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhangFei")
+                                    {
+                                        ShuMorale=ShuMorale+400;
+                                    }
+                                }
+                                else if(CloseCombatDefend_List[i]->ReturnLevel()==1)
+                                {
+                                    if(CloseCombatDefend_List[i]->ReturnIdentity()=="LiuShen")
+                                    {
+                                        ShuMorale=ShuMorale+160;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhuGeZhan")
+                                    {
+                                        ShuMorale=ShuMorale+240;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="HanShen")
+                                    {
+                                        ShuMorale=ShuMorale+120;
+                                    }
+                                    else if(CloseCombatDefend_List[i]->ReturnIdentity()=="GuanXingZhangBao")
+                                    {
+                                         ShuMorale=ShuMorale+80;
+                                    }
+                                }
+                                CloseCombatDefend_List.removeOne(CloseCombatDefend_List[i]);
+                                it->tower_exist(false);
+                                break;
+                        }
+                    }
+                    break;
+                }
+                ++it;
+            }
+        }
+        singleClicked=false;
     }
     }
 }
@@ -626,12 +1100,42 @@ void DifferentScence:: mouseDoubleClickEvent(QMouseEvent *event)
                     {
                         if(CloseCombatDefend_List[i]->ReturnLevel()==1)
                         {
-                        if(ShuMorale>=500)
-                        {
-                        ShuMorale=ShuMorale-500;
-                        CloseCombatDefend_List[i]->UpgradeSpirit();
-                        break;
-                        }
+                            if(CloseCombatDefend_List[i]->ReturnIdentity()=="LiuShen")
+                            {
+                                if(ShuMorale>=500)
+                                {
+                                ShuMorale=ShuMorale-500;
+                                CloseCombatDefend_List[i]->UpgradeSpirit();
+                                break;
+                                }
+                            }
+                            else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhuGeZhan")
+                            {
+                                if(ShuMorale>=600)
+                                {
+                                ShuMorale=ShuMorale-600;
+                                CloseCombatDefend_List[i]->UpgradeSpirit();
+                                break;
+                                }
+                            }
+                            else if(CloseCombatDefend_List[i]->ReturnIdentity()=="HanShen")
+                            {
+                                if(ShuMorale>=300)
+                                {
+                                ShuMorale=ShuMorale-300;
+                                CloseCombatDefend_List[i]->UpgradeSpirit();
+                                break;
+                                }
+                            }
+                            else if(CloseCombatDefend_List[i]->ReturnIdentity()=="GuanXingZhangBao")
+                            {
+                                if(ShuMorale>=400)
+                                {
+                                ShuMorale=ShuMorale-400;
+                                CloseCombatDefend_List[i]->UpgradeSpirit();
+                                break;
+                                }
+                            }
                         }
                     }
                 }
@@ -654,11 +1158,41 @@ void DifferentScence:: mouseDoubleClickEvent(QMouseEvent *event)
                         {
                             if(CloseCombatDefend_List[i]->ReturnLevel()==1)
                             {
-                                if(ShuMorale>=500)
+                                if(CloseCombatDefend_List[i]->ReturnIdentity()=="LiuShen")
                                 {
-                                ShuMorale=ShuMorale-500;
-                                CloseCombatDefend_List[i]->UpgradeSpirit();
-                                break;
+                                    if(ShuMorale>=500)
+                                    {
+                                    ShuMorale=ShuMorale-500;
+                                    CloseCombatDefend_List[i]->UpgradeSpirit();
+                                    break;
+                                    }
+                                }
+                                else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhuGeZhan")
+                                {
+                                    if(ShuMorale>=600)
+                                    {
+                                    ShuMorale=ShuMorale-600;
+                                    CloseCombatDefend_List[i]->UpgradeSpirit();
+                                    break;
+                                    }
+                                }
+                                else if(CloseCombatDefend_List[i]->ReturnIdentity()=="HanShen")
+                                {
+                                    if(ShuMorale>=300)
+                                    {
+                                    ShuMorale=ShuMorale-300;
+                                    CloseCombatDefend_List[i]->UpgradeSpirit();
+                                    break;
+                                    }
+                                }
+                                else if(CloseCombatDefend_List[i]->ReturnIdentity()=="GuanXingZhangBao")
+                                {
+                                    if(ShuMorale>=400)
+                                    {
+                                    ShuMorale=ShuMorale-400;
+                                    CloseCombatDefend_List[i]->UpgradeSpirit();
+                                    break;
+                                    }
                                 }
                             }
                         }
@@ -682,11 +1216,41 @@ void DifferentScence:: mouseDoubleClickEvent(QMouseEvent *event)
                         {
                             if(CloseCombatDefend_List[i]->ReturnLevel()==1)
                             {
-                                if(ShuMorale>=500)
+                                if(CloseCombatDefend_List[i]->ReturnIdentity()=="LiuShen")
                                 {
-                                ShuMorale=ShuMorale-500;
-                                CloseCombatDefend_List[i]->UpgradeSpirit();
-                                break;
+                                    if(ShuMorale>=500)
+                                    {
+                                    ShuMorale=ShuMorale-500;
+                                    CloseCombatDefend_List[i]->UpgradeSpirit();
+                                    break;
+                                    }
+                                }
+                                else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhuGeZhan")
+                                {
+                                    if(ShuMorale>=600)
+                                    {
+                                    ShuMorale=ShuMorale-600;
+                                    CloseCombatDefend_List[i]->UpgradeSpirit();
+                                    break;
+                                    }
+                                }
+                                else if(CloseCombatDefend_List[i]->ReturnIdentity()=="HanShen")
+                                {
+                                    if(ShuMorale>=300)
+                                    {
+                                    ShuMorale=ShuMorale-300;
+                                    CloseCombatDefend_List[i]->UpgradeSpirit();
+                                    break;
+                                    }
+                                }
+                                else if(CloseCombatDefend_List[i]->ReturnIdentity()=="GuanXingZhangBao")
+                                {
+                                    if(ShuMorale>=400)
+                                    {
+                                    ShuMorale=ShuMorale-400;
+                                    CloseCombatDefend_List[i]->UpgradeSpirit();
+                                    break;
+                                    }
                                 }
                             }
                         }
@@ -711,11 +1275,41 @@ void DifferentScence:: mouseDoubleClickEvent(QMouseEvent *event)
                         {
                             if(CloseCombatDefend_List[i]->ReturnLevel()==1)
                             {
-                                if(ShuMorale>=500)
+                                if(CloseCombatDefend_List[i]->ReturnIdentity()=="LiuShen")
                                 {
-                                ShuMorale=ShuMorale-500;
-                                CloseCombatDefend_List[i]->UpgradeSpirit();
-                                break;
+                                    if(ShuMorale>=500)
+                                    {
+                                    ShuMorale=ShuMorale-500;
+                                    CloseCombatDefend_List[i]->UpgradeSpirit();
+                                    break;
+                                    }
+                                }
+                                else if(CloseCombatDefend_List[i]->ReturnIdentity()=="ZhuGeZhan")
+                                {
+                                    if(ShuMorale>=600)
+                                    {
+                                    ShuMorale=ShuMorale-600;
+                                    CloseCombatDefend_List[i]->UpgradeSpirit();
+                                    break;
+                                    }
+                                }
+                                else if(CloseCombatDefend_List[i]->ReturnIdentity()=="HanShen")
+                                {
+                                    if(ShuMorale>=300)
+                                    {
+                                    ShuMorale=ShuMorale-300;
+                                    CloseCombatDefend_List[i]->UpgradeSpirit();
+                                    break;
+                                    }
+                                }
+                                else if(CloseCombatDefend_List[i]->ReturnIdentity()=="GuanXingZhangBao")
+                                {
+                                    if(ShuMorale>=400)
+                                    {
+                                    ShuMorale=ShuMorale-400;
+                                    CloseCombatDefend_List[i]->UpgradeSpirit();
+                                    break;
+                                    }
                                 }
                             }
                         }
@@ -1009,8 +1603,11 @@ void DifferentScence::AttackChengdu(int damage)
 //载入魏军批数
 bool DifferentScence::LoadBatch()
 {
+    srand(time(0));
     if(WeiSodier_Batch>=Batch+1)
+    {
         return false;
+    }
     if(Flag=="AzureDragonScence")
     {
         sleep(10000);//每轮开始前留给玩家10s时间准备
@@ -1047,6 +1644,17 @@ bool DifferentScence::LoadBatch()
                 }
                 WeiSodier_List.push_back(weiSodier);
                 QTimer::singleShot(Interval*i,weiSodier,SLOT(OrderActive()));
+            }
+            else if(i==Number-2)
+            {
+                weiSodier->ChangeWeiSodier(3);
+                for(int j=0;j<Cout;j++)
+                {
+                    weiSodier->StrengthWeiSodier();
+                }
+                WeiSodier_List.push_back(weiSodier);
+                QTimer::singleShot(Interval*i,weiSodier,SLOT(OrderActive()));
+
             }
             else
             {
@@ -1110,6 +1718,17 @@ bool DifferentScence::LoadBatch()
                 }
                 WeiSodier_List.push_back(weiSodier);
                 QTimer::singleShot(Interval*i,weiSodier,SLOT(OrderActive()));
+
+            }
+            else if(i==Number-2)
+            {
+                weiSodier->ChangeWeiSodier(3);
+                for(int j=0;j<Cout;j++)
+                {
+                    weiSodier->StrengthWeiSodier();
+                }
+                WeiSodier_List.push_back(weiSodier);
+                QTimer::singleShot(Interval*i,weiSodier,SLOT(OrderActive()));
             }
             else
             {
@@ -1130,31 +1749,14 @@ bool DifferentScence::LoadBatch()
     else if(Flag=="VermilionBirdScence")
     {
         sleep(10000);//每轮开始前留给玩家10s时间准备
+        int standard=Batch/2;
         RoutePoint *StartRoutePoint=VermilionBirdScenceRoutePoint_List[0];
         RoutePoint *StartRoutePoint2=VermilionBirdScenceRoutePoint_List[1];
         RoutePoint *StartRoutePoint3=VermilionBirdScenceRoutePoint_List[6];
-        if(WeiSodier_Batch<Batch)
+        if(WeiSodier_Batch>standard)
         {
-            int Interval=2000;
-            int Number=5+WeiSodier_Batch;
-        for(int i=0;i<Number;i++)
-        {
-            WeiSodier *weiSodier=new WeiSodier(*StartRoutePoint,this);
-            WeiSodier *weiSodier2=new WeiSodier(*StartRoutePoint2,this);
-            weiSodier->ChangeWeiSodier(1);
-            weiSodier2->ChangeWeiSodier(1);
-            for(int j=0;j<Cout;j++)
+            if(WeiSodier_Batch==Batch)
             {
-                weiSodier->StrengthWeiSodier();
-                weiSodier2->StrengthWeiSodier();
-            }
-            WeiSodier_List.push_back(weiSodier);
-            WeiSodier_List.push_back(weiSodier2);
-            QTimer::singleShot(Interval*i,weiSodier,SLOT(OrderActive()));
-            QTimer::singleShot(Interval*i,weiSodier2,SLOT(OrderActive()));
-        }
-        if(WeiSodier_Batch>30)
-        {
             int Interval=2000;
             int Number=5+WeiSodier_Batch;
         for(int i=0;i<Number;i++)
@@ -1181,6 +1783,44 @@ bool DifferentScence::LoadBatch()
                 QTimer::singleShot(Interval*i,weiSodier3,SLOT(OrderActive()));
             }
         }
+            }
+            else
+            {
+                int Interval=2000;
+                int Number=5+WeiSodier_Batch;
+            for(int i=0;i<Number;i++)
+            {
+                WeiSodier *weiSodier=new WeiSodier(*StartRoutePoint3,this);
+                weiSodier->ChangeWeiSodier(1);
+                for(int j=0;j<Cout;j++)
+                {
+                    weiSodier->StrengthWeiSodier();
+                }
+                WeiSodier_List.push_back(weiSodier);
+                QTimer::singleShot(Interval*i,weiSodier,SLOT(OrderActive()));
+
+            }
+            }
+        }
+        if(WeiSodier_Batch<Batch)
+        {
+            int Interval=2000;
+            int Number=5+WeiSodier_Batch;
+        for(int i=0;i<Number;i++)
+        {
+            WeiSodier *weiSodier=new WeiSodier(*StartRoutePoint,this);
+            WeiSodier *weiSodier2=new WeiSodier(*StartRoutePoint2,this);
+            weiSodier->ChangeWeiSodier(1);
+            weiSodier2->ChangeWeiSodier(1);
+            for(int j=0;j<Cout;j++)
+            {
+                weiSodier->StrengthWeiSodier();
+                weiSodier2->StrengthWeiSodier();
+            }
+            WeiSodier_List.push_back(weiSodier);
+            WeiSodier_List.push_back(weiSodier2);
+            QTimer::singleShot(Interval*i,weiSodier,SLOT(OrderActive()));
+            QTimer::singleShot(Interval*i,weiSodier2,SLOT(OrderActive()));
         }
         }
         else
@@ -1190,25 +1830,34 @@ bool DifferentScence::LoadBatch()
         for(int i=0;i<Number;i++)
         {
             WeiSodier *weiSodier=new WeiSodier(*StartRoutePoint,this);
+            WeiSodier *weiSodier2=new WeiSodier(*StartRoutePoint2,this);
             if(i==Number-1)
             {
                 weiSodier->ChangeWeiSodier(2);
+                weiSodier2->ChangeWeiSodier(2);
                 for(int j=0;j<Cout;j++)
                 {
                     weiSodier->StrengthWeiSodier();
+                    weiSodier2->StrengthWeiSodier();
                 }
                 WeiSodier_List.push_back(weiSodier);
+                WeiSodier_List.push_back(weiSodier2);
                 QTimer::singleShot(Interval*i,weiSodier,SLOT(OrderActive()));
+                QTimer::singleShot(Interval*i,weiSodier2,SLOT(OrderActive()));
             }
             else
             {
                 weiSodier->ChangeWeiSodier(1);
+                weiSodier2->ChangeWeiSodier(1);
                 for(int j=0;j<Cout;j++)
                 {
                     weiSodier->StrengthWeiSodier();
+                    weiSodier2->StrengthWeiSodier();
                 }
                 WeiSodier_List.push_back(weiSodier);
+                WeiSodier_List.push_back(weiSodier2);
                 QTimer::singleShot(Interval*i,weiSodier,SLOT(OrderActive()));
+                QTimer::singleShot(Interval*i,weiSodier2,SLOT(OrderActive()));
 
             }
         }
@@ -1320,7 +1969,19 @@ void DifferentScence::destroyEfficacy(Efficacy *efficacy)
     Efficacy_List.removeOne(efficacy);
     delete efficacy;
 }
-
+//增添风
+void DifferentScence::AddWind(Wind *wind)
+{
+    Q_ASSERT(wind);
+    Wind_List.push_back(wind);
+}
+//移除风
+void DifferentScence::destroyWind(Wind *wind)
+{
+    Q_ASSERT(wind);
+    Wind_List.removeOne(wind);
+    delete wind;
+}
 //更新地图模拟帧数
 void DifferentScence::RenewMap()
 {
@@ -1357,6 +2018,14 @@ void DifferentScence::DrawBatch(QPainter *Painter)
     Painter->setFont(Font);
     Painter->setPen(Qt::red);
     Painter->drawText(QRect(1350,5,300,300), QString("魏军批数:%1").arg(WeiSodier_Batch));
+    if(IsEndless==true)
+    {
+        Painter->drawText(QRect(1530,5,300,300), QString("/∞"));
+    }
+    else
+    {
+    Painter->drawText(QRect(1530,5,300,300), QString("/%1").arg(Batch));
+    }
 }
 //画出成都民心
 void DifferentScence::DrawChengDuCitizenry(QPainter *Painter)
@@ -1429,7 +2098,6 @@ void DifferentScence::DecreaseBatch()
     else
     {
         Batch=Batch-1;
-        qDebug()<<Batch;
     }
 }
 //减少当前批数
@@ -1448,6 +2116,12 @@ void DifferentScence::DecreaseCurrentBatch()
 //变为无尽模式
 void DifferentScence::Endless()
 {
-    Batch=100000000;
+    Batch=999999999;
+    IsEndless=true;
+}
+//强制转化类型
+void DifferentScence::ChangeKind(QString kind)
+{
+    Defend_Kind=kind;
 }
 

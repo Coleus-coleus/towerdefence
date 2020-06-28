@@ -5,6 +5,8 @@
 #include <QPropertyAnimation>
 #include <QPoint>
 #include <QDebug>
+#include <QVector2D>
+#include <QtMath>
 //构造函数
 Efficacy::Efficacy(QPoint StartPoint,
                    QPoint TargetPoint,
@@ -23,7 +25,7 @@ Efficacy::Efficacy(QPoint StartPoint,
      My_Sound(NULL)
 {
     My_Sound=new QSound(":/Efficacy/Cut.wav",this);
-    QSize PictureSize(100,100);
+    QSize PictureSize(150,150);
     QPixmap SizePicture=My_Picture.scaled(PictureSize,Qt::KeepAspectRatio);
     My_Picture=SizePicture;
 }
@@ -31,6 +33,7 @@ Efficacy::Efficacy(QPoint StartPoint,
 void Efficacy::draw(QPainter *painter)const
 {
     painter->drawPixmap(My_CurrentPoint,My_Picture);
+
 }
 //特效的移动
 void Efficacy::Move()
@@ -64,12 +67,39 @@ QPoint Efficacy::CurrentPoint()const
 void Efficacy::ChangePicture()
 {
    My_Sound=new QSound(":/Efficacy/Shoot.wav",this);
-   My_Picture=QPixmap(":/Efficacy/Jian.png");
-   QSize PictureSize(100,100);
+   My_Picture=QPixmap(":/Efficacy/Shoot.png");
+   QSize PictureSize(125,125);
    QPixmap SizePicture=My_Picture.scaled(PictureSize,Qt::KeepAspectRatio);
    My_Picture=SizePicture;
    My_kind="Shoot";
 }
+void Efficacy::ChangeVermilion()
+{
+    My_Picture=QPixmap(":/logo/scence_logo/Vermilion Bird.png");
+    QSize PictureSize(200,200);
+    QPixmap SizePicture=My_Picture.scaled(PictureSize,Qt::KeepAspectRatio);
+    My_Picture=SizePicture;
+}
+
+//改变图片，关羽专用
+void Efficacy::ChangeDragon()
+{
+    My_Sound=new QSound(":/GuanZhang/GuanYu/GuanYu_Efficacy.wav");
+    My_Picture=QPixmap(":/logo/scence_logo/Azure Dragon.png");
+    QSize PictureSize(200,200);
+    QPixmap SizePicture=My_Picture.scaled(PictureSize,Qt::KeepAspectRatio);
+    My_Picture=SizePicture;
+}
+//改变图片，张飞专用
+void Efficacy::ChangeTiger()
+{
+    My_Sound=new QSound(":/GuanZhang/ZhangFei/ZhangFei_Efficacy.wav");
+    My_Picture=QPixmap(":/logo/scence_logo/White Tiger.png");
+    QSize PictureSize(200,200);
+    QPixmap SizePicture=My_Picture.scaled(PictureSize,Qt::KeepAspectRatio);
+    My_Picture=SizePicture;
+}
+
 //返回特效音乐
 QSound* Efficacy::ReturnSound()
 {

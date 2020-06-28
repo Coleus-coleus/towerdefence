@@ -26,6 +26,7 @@ public:
     void ChangeWeiSodier(int Order);//改变魏军类型
     QPoint Coordinate();//返回魏军的坐标
     void StrengthWeiSodier();//随着时间增强魏军
+    int ReturnCurrentHP();//返回魏军现在的血量
 
 signals:
 

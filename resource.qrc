@@ -6,26 +6,28 @@
         <file>background/startbackground.png</file>
         <file>background/Vermilion BirdScence.jpg</file>
         <file>background/WarLose.png</file>
+        <file>background/WarWin.png</file>
         <file>background/White TigerScence.png</file>
         <file>button/backbutton.png</file>
         <file>button/startbutton.png</file>
         <file>Efficacy/Cut.png</file>
         <file>Efficacy/Cut.wav</file>
-        <file>Efficacy/Jian.png</file>
-        <file>Efficacy/Light.png</file>
+        <file>Efficacy/Shoot.png</file>
         <file>Efficacy/Shoot.wav</file>
-        <file>GuanZhang/GuanXinZhangBao/GuanXinZhangBao.png</file>
-        <file>GuanZhang/GuanXinZhangBao/GuanXinZhangBao_Appear.wav</file>
-        <file>GuanZhang/GuanXinZhangBao/GuanXinZhangBao_Dead.wav</file>
+        <file>GuanZhang/GuanXingZhangBao/GuanXingZhangBao.png</file>
+        <file>GuanZhang/GuanXingZhangBao/GuanXingZhangBao_Appear.wav</file>
+        <file>GuanZhang/GuanXingZhangBao/GuanXingZhangBao_Dead.wav</file>
         <file>GuanZhang/GuanYu/GuanYu.png</file>
         <file>GuanZhang/GuanYu/GuanYu_Appear.wav</file>
         <file>GuanZhang/GuanYu/GuanYu_Dead.wav</file>
+        <file>GuanZhang/GuanYu/GuanYu_Efficacy.wav</file>
         <file>GuanZhang/ZhangFei/ZhangFei.png</file>
         <file>GuanZhang/ZhangFei/ZhangFei_Appear.wav</file>
         <file>GuanZhang/ZhangFei/ZhangFei_Dead.wav</file>
-        <file>HanShen/HanShen.png</file>
-        <file>HanShen/HanShen_Appear.wav</file>
+        <file>GuanZhang/ZhangFei/ZhangFei_Efficacy.wav</file>
         <file>HanShen/HanShen_Dead.wav</file>
+        <file>HanShen/HanShen_Appear.wav</file>
+        <file>HanShen/HanShen.png</file>
         <file>LiuHan/ChengDu_LiuShan/ChengDu_LiuShan.png</file>
         <file>LiuHan/ChengDu_LiuShan/ChengDu_LiuShanGetDamaged1.wav</file>
         <file>LiuHan/ChengDu_LiuShan/ChengDu_LiuShanGetDamaged2.wav</file>
@@ -36,11 +38,11 @@
         <file>LiuHan/LiuShen/LiuShen.png</file>
         <file>LiuHan/LiuShen/LiuShen_Appear.wav</file>
         <file>LiuHan/LiuShen/LiuShen_Dead.wav</file>
-        <file>logo/logo.png</file>
         <file>logo/scence_logo/Azure Dragon.png</file>
         <file>logo/scence_logo/Black Tortoise.png</file>
         <file>logo/scence_logo/Vermilion Bird.png</file>
         <file>logo/scence_logo/White Tiger.png</file>
+        <file>logo/logo.png</file>
         <file>Music/BeginMusic.wav</file>
         <file>Music/ChooseMusic.wav</file>
         <file>Music/ScenceMusic.wav</file>
@@ -49,11 +51,15 @@
         <file>WeiGeneral/ZhongHui.png</file>
         <file>WeiSodier/WeiCavalry.png</file>
         <file>WeiSodier/WeiInfantry.png</file>
+        <file>Wind/Wind.png</file>
+        <file>Wind/Wind.wav</file>
         <file>ZhuGe/ZhuGeZhan/ZhuGeZhan.png</file>
         <file>ZhuGe/ZhuGeZhan/ZhuGeZhan_Appear.wav</file>
         <file>ZhuGe/ZhuGeZhan/ZhuGeZhan_Dead.wav</file>
         <file>ZhuGe/ZhuGeLiang/ZhuGeLiang.png</file>
         <file>ZhuGe/ZhuGeLiang/ZhuGeLiang_Appear.wav</file>
         <file>ZhuGe/ZhuGeLiang/ZhuGeLiang_Dead.wav</file>
+        <file>Music/WarLose.wav</file>
+        <file>Music/WarWin.wav</file>
     </qresource>
 </RCC>
